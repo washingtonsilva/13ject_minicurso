@@ -1,0 +1,182 @@
+---
+title: "Análise de Vendas em 2023"
+author: Departamento de Inteligência de Mercado
+lang: pt
+format:
+  dashboard:
+    self-contained: true
+    page-layout: full
+    theme: sandstone
+editor: source
+---
+
+
+
+```{r}
+#| label: setup
+
+# Pacotes necessários
+library(tidyverse)
+library(lubridate)
+library(gt)
+library(plotly)
+library(highcharter)
+
+# Importa e prepara os dados
+
+## define o caminho para o arquivo dados_vendas.csv
+caminho_csv <- here::here("dados/dados_vendas.csv")
+
+## importa os dados do arquivo .csv
+dados_vendas <- readr::read_csv(caminho_csv)
+
+# transforma as variáveis Cidade, Representante e Produto para a classe factor
+dados_vendas <- dados_vendas %>%
+  mutate(
+    Cidade = as.factor(Cidade),
+    Representante = as.factor(Representante),
+    Produto = as.factor(Produto)
+  )
+```
+
+
+
+
+## Linha 1
+
+```{r}
+#| title: "**Receita Mensal Total**"
+
+# Agrupar por mês
+vendas_mensais <- dados_vendas %>%
+  mutate(Mes = floor_date(Data, "month")) %>%
+  group_by(Mes) %>%
+  summarise(Receita_Total = sum(Receita),
+            Unidades_Vendidas = sum(Unidades))
+
+# Plotar Receita Mensal
+plot_receita_mensal <- ggplot(vendas_mensais, aes(x = Mes, y = Receita_Total)) +
+  geom_point() + 
+  geom_line(color = "steelblue", size = 1) +
+  labs(title = NULL, x = "Mês", y = "Receita (R$)") +
+  theme_minimal()
+
+ggplotly(plot_receita_mensal)
+```
+
+
+```{r}
+#| title: "**Receita Total por Cidade**"
+
+# Agrupar os dados por Cidade para calcular a Receita Total e Unidades Vendidas
+receita_cidades <- dados_vendas %>%
+  group_by(Cidade) %>%
+  summarise(Receita_Total = sum(Receita)) %>%
+  arrange(desc(Receita_Total))  
+
+
+# Criar o gráfico de barras interativo com highcharter
+highchart() %>%
+  # Definir o tipo de gráfico como "coluna"
+  hc_chart(type = "column") %>%
+  
+  # Configurar o eixo X, utilizando as cidades como categorias
+  hc_xAxis(
+    categories = receita_cidades$Cidade,# Define as categorias no eixo X (cidades)
+    title = list(text = "Cidade")  # Título do eixo X
+  ) %>%
+  
+  # Configurar o eixo Y, que representa a Receita Total
+  hc_yAxis(
+    title = list(text = "Receita (R$)")  # Título do eixo Y
+  ) %>%
+  
+  # Adicionar a série de dados, que é a Receita Total por cidade
+  hc_add_series(
+    name = "Receita Total",  # Nome da série de dados
+    data = receita_cidades$Receita_Total,  # Usar a receita total como dados
+    colorByPoint = TRUE  # Colorir cada barra de forma diferente
+  ) %>%
+  
+  # Personalizar o tooltip (informação exibida ao passar o mouse)
+  hc_tooltip(
+    # Formatar o tooltip com 2 casas decimais e símbolo de moeda
+    pointFormat = 'Receita: <b>R$ {point.y:.2f}</b>'  
+  ) 
+```
+
+
+
+
+## Linha 2
+
+```{r}
+#| title: "**Top 5 Representantes por Receita**"
+
+# Agrupar por Representante e calcular a Receita Total
+vendas_representante <- dados_vendas %>%
+  group_by(Representante) %>%
+  summarise(Receita_Total = sum(Receita)) %>%
+  arrange(desc(Receita_Total)) %>%
+  slice_head(n = 5)  # Selecionar os 5 representantes com maior receita
+
+# Criar a tabela com o pacote gt e aplicar o mapa de calor
+vendas_representante %>%
+  gt() %>%
+  # Formatar a coluna Receita_Total como moeda brasileira
+  fmt_currency(columns = Receita_Total, currency = "BRL") %>%
+  # Adicionar o mapa de calor na coluna Receita_Total
+  data_color(
+    columns = Receita_Total,
+    colors = scales::col_numeric(
+      palette = c("lightblue", "blue"),  # Paleta de cores para o mapa de calor
+      domain = NULL  # O domínio é calculado automaticamente com base nos valores
+    )
+  )
+```
+
+
+```{r}
+#| title: "**Receita Total por Produto**"
+
+# Agrupar os dados por Produto para calcular a Receita Total
+vendas_produto <- dados_vendas %>%
+  group_by(Produto) %>%
+  summarise(Receita_Total = sum(Receita))
+
+# Criar o gráfico de barras interativo com highcharter
+highchart() %>%
+  
+  # Definir o tipo de gráfico como "coluna" (barras verticais)
+  hc_chart(type = "column") %>%
+  
+  # Configurar o eixo X, utilizando os produtos como categorias
+  hc_xAxis(
+    categories = vendas_produto$Produto,  # Define as categorias no eixo X (produtos)
+    title = list(text = "Produto")  # Título do eixo X
+  ) %>%
+  
+  # Configurar o eixo Y, que representa a Receita Total
+  hc_yAxis(
+    title = list(text = "Receita Total (R$)")  # Título do eixo Y
+  ) %>%
+  
+  # Adicionar a série de dados, que é a Receita Total por produto
+  hc_add_series(
+    name = "Receita Total",  # Nome da série de dados
+    data = vendas_produto$Receita_Total,  # Usar a receita total como dados
+    colorByPoint = TRUE  # Colorir cada barra de forma diferente
+  ) %>%
+  
+  # Personalizar o tooltip (informação exibida ao passar o mouse sobre os pontos)
+  hc_tooltip(
+    pointFormat = 'Receita: <b>R$ {point.y:.2f}</b>'  # Formatar o tooltip com 2 casas decimais e símbolo de moeda
+  ) 
+```
+
+
+
+
+
+
+

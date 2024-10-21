@@ -1,0 +1,199 @@
+---
+title: "Relatório de Vendas para a Cidade de `r params$cidade`"
+subtile: "Ano - 2023"
+author: "Departamento de Inteligência de Mercado"
+institute: "Empresa XYZ"
+lang: pt
+date: "`r Sys.Date()`"
+date_format: "%d/%B/%Y"
+format: 
+  beamer:
+    theme: default
+    navigation: horizontal
+params:
+  cidade: "Formiga"
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+#| label: setup
+
+# configura exibicao de numeros
+options(scipen = 9999)
+
+# pacotes necessarios
+library(tidyverse)
+library(lubridate)
+library(gt)
+library(scales)
+
+# Importa o arquivo de dados
+ 
+## define o caminho para o arquivo dados_vendas.csv
+caminho_csv <- here::here("dados/dados_vendas.csv")
+
+## importa os dados do arquivo .csv
+dados_vendas <- readr::read_csv(caminho_csv)
+
+# filtra os dados para a cidade definida como parametro
+dados_cidade <- dados_vendas %>%
+  filter(Cidade == params$cidade)
+```
+
+
+
+## Visão Geral
+
+```{r}
+#| label: visao-geral
+
+# Preparando os dados no formato desejado, "transpondo" para que os valores fiquem em linhas
+resumo_transposto <- tibble::tibble(
+  Métrica = c("Unidades Vendidas", "Receita Total", "Receita Média por Venda"),
+  Valor = c(
+    nrow(dados_cidade),
+    sum(dados_cidade$Receita),
+    mean(dados_cidade$Receita)
+  )
+)
+# Criando a tabela com o gt no formato de linhas
+resumo_transposto %>%
+  gt() %>%
+  fmt_number(
+    columns = Valor,
+    decimals = 0,
+    use_seps = TRUE
+  ) %>%
+  fmt_currency(
+    columns = Valor,
+    rows = c(2, 3), # Define as linhas que são valores monetários
+    currency = "BRL"
+  ) %>%
+  cols_label(
+    Métrica = "Indicador",
+    Valor = "Valor"
+  ) %>%
+  tab_header(
+    title = "Resumo das Vendas",
+    subtitle = glue::glue("Cidade: {params$cidade}")
+  ) %>%
+  tab_options(
+    heading.background.color = "#E0E0E0",
+    column_labels.background.color = "#F0F0F0"
+  )
+```
+
+
+
+## Detalhes das Vendas
+
+```{r}
+#| label: vendas-por-produto
+
+vendas_produto <- dados_cidade %>%
+  group_by(Produto) %>%
+  summarise(
+    Total_Vendas = n(),
+    Total_Receita = sum(Receita)
+  ) %>%
+  arrange(desc(Total_Receita))
+
+vendas_produto %>%
+  gt() %>%
+  fmt_number(
+    columns = Total_Vendas,
+    decimals = 0,
+    use_seps = TRUE
+  ) %>%
+  fmt_currency(
+    columns = Total_Receita,
+    currency = "BRL"
+  ) %>%
+  cols_label(
+    Produto = "Produto",
+    Total_Vendas = "Unidades Vendidas",
+    Total_Receita = "Receita Total"
+  ) %>%
+  tab_header(
+    title = "Vendas por Produto",
+    subtitle = glue::glue("Cidade: {params$cidade}")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#E0E0E0"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  data_color(
+    columns = Total_Receita,
+    colors = scales::col_numeric(
+      palette = c("white", "skyblue"),
+      domain = NULL
+    )
+  )
+```
+
+
+
+## Representantes de Vendas
+
+```{r}
+#| label: desempenho-representantes
+
+desempenho_rep <- dados_cidade %>%
+  group_by(Representante) %>%
+  summarise(
+    Total_Vendas = n(),
+    Total_Receita = sum(Receita)
+  ) %>%
+  arrange(desc(Total_Receita)) %>%
+  head(5)
+
+desempenho_rep %>%
+  gt() %>%
+  fmt_number(
+    columns = Total_Vendas,
+    decimals = 0,
+    use_seps = TRUE
+  ) %>%
+  fmt_currency(
+    columns = Total_Receita,
+    currency = "BRL"
+  ) %>%
+  cols_label(
+    Representante = "Representante",
+    Total_Vendas = "Unidades Vendidas",
+    Total_Receita = "Receita Total"
+  ) %>%
+  tab_header(
+    title = "Top 5 Representantes por Receita",
+    subtitle = glue::glue("Cidade: {params$cidade}")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#E0E0E0"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  data_color(
+    columns = Total_Receita,
+    colors = scales::col_numeric(
+      palette = c("white", "lightgreen"),
+      domain = NULL
+    )
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(
+      columns = Representante,
+      rows = 1
+    )
+  )
+```
+
+

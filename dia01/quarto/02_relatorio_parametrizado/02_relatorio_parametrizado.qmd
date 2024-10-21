@@ -1,0 +1,108 @@
+---
+title: "Relatório de Vendas para a Cidade de `r params$cidade`"
+lang: pt
+date: "`r format(Sys.time(), '%d %B %Y')`"
+date-format: long
+params:
+  cidade: "Pimenta"  # Valor padrão para o parâmetro
+format: 
+  html:
+     self-contained: true
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+# Carrega pacotes necessários
+library(dplyr)
+library(gt)
+library(highcharter)
+```
+
+
+```{r}
+# Importa e prepara os dados
+
+## define o caminho para o arquivo dados_vendas.csv
+caminho_csv <- here::here("dados/dados_vendas.csv")
+
+## importa os dados do arquivo .csv
+dados_vendas <- readr::read_csv(caminho_csv)
+
+# transforma as variáveis Cidade, Representante e Produto para a classe factor
+dados_vendas <- dados_vendas %>%
+  mutate(
+    Cidade = as.factor(Cidade),
+    Representante = as.factor(Representante),
+    Produto = as.factor(Produto)
+  )
+
+# filtra os dados pela cidade definida como parâmetro
+dados_filtrados <- dados_vendas %>%
+  filter(Cidade == params$cidade)
+
+# dados com a receita e unidades vendidas, por produto, para a cidade escolhida
+tabela_receita <- dados_filtrados %>%
+  group_by(Produto) %>%
+  summarize(Receita_Total = sum(Receita),
+            Unidades_Total = sum(Unidades)) %>%
+  arrange(desc(Receita_Total))
+```
+
+```{r}
+# Cria uma tabela com o pacote gt
+
+tabela_receita %>%
+  gt() %>%
+  fmt_currency(
+    columns = vars(Receita_Total),
+    currency = "BRL"
+  ) %>%
+  cols_label(
+    Produto = "Produto Vendido",
+    Receita_Total = "Receita Total",
+    Unidades_Total = "Unidades Vendidas"
+  ) %>%
+  tab_header(
+    title = paste("Resumo de Vendas na Cidade de", params$cidade)
+  )
+```
+
+
+```{r}
+# Cria gráfico interativo de barras da receita total por produto 
+# para a cidade escolhida com highcharter
+
+highchart() %>%
+  hc_chart(type = "column") %>%
+  hc_title(text = paste("Receita Total por Produto - Cidade de", params$cidade)) %>%
+  hc_xAxis(categories = tabela_receita$Produto) %>%
+  hc_yAxis(title = list(text = "Receita Total (R$)")) %>%
+  hc_add_series(
+    name = "Receita Total",
+    data = tabela_receita$Receita_Total
+  ) %>%
+  hc_tooltip(pointFormat = 'Receita: <b>R$ {point.y:.2f}</b>')
+```
+
+
+```{r}
+# Cria gráfico interataivo de barras das unidades vendidas por produto 
+# para a cidade scolhida  highcharter
+
+highchart() %>%
+  hc_chart(type = "column") %>%
+  hc_title(text = paste("Unidades Vendidas por Produto - Cidade de", params$cidade)) %>%
+  hc_xAxis(categories = tabela_receita$Produto) %>%
+  hc_yAxis(title = list(text = "Unidades Vendidas")) %>%
+  hc_add_series(
+    name = "Unidades Vendidas",
+    data = tabela_receita$Unidades_Total
+  ) %>%
+  hc_tooltip(pointFormat = 'Unidades: <b>{point.y}</b>')
+```
+
+
+

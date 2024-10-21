@@ -1,0 +1,252 @@
+---
+title: "Relatório de Vendas 2023"
+subtitle: "Deparamento de Inteligência de Mercado" 
+author: "SEU NOME"
+institute: "Empresa XYX"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+date-format: long
+lang: pt
+format: 
+  revealjs:
+    theme: simple
+    fig-dpi: 105
+    slide-number: true
+    progress: true
+    incremental: false
+    transition: concave
+    self-contained: true
+    overview: true
+    logo: img/logo.jpeg
+    css: logo.css
+editor: source
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+
+```{r}
+#| label: setup 
+
+# 1. Pacotes utilizados
+
+library(here)         # permite utilizar caminhos relativos de arquivos
+library(tidyverse)    # metapacote que inclui: readr, dplyr, ggplot2...
+library(skimr)        # para análise exploratória dos dados
+library(highcharter)  # criação de gráficos interativos
+library(gt)           # para criação de tabelas
+
+# 2. Importacao dos dados
+
+## define o caminho para o arquivo dados_vendas.csv
+caminho_csv <- here::here("dados/dados_vendas.csv")
+
+## importa os dados do arquivo .csv
+dados_vendas <- readr::read_csv(caminho_csv)
+
+## transforma as variáveis Cidade, Representante e Produto para a classe factor
+dados_vendas <- dados_vendas %>%
+  mutate(
+    Cidade = as.factor(Cidade),
+    Representante = as.factor(Representante),
+    Produto = as.factor(Produto)
+  )
+
+# 3. Dados necessários
+
+# receita_por_cidade
+receita_por_cidade <- dados_vendas %>%
+  group_by(Cidade) %>%
+  summarize(Receita_Total = sum(Receita)) %>%
+  arrange(desc(Receita_Total))
+
+# dados_formiga
+dados_formiga <- dados_vendas %>%
+  filter(Cidade == "Formiga")
+
+# dados_receita_formiga
+dados_receita_formiga <- dados_formiga %>%
+  group_by(Produto) %>%
+  summarize(Receita_Total = sum(Receita))
+
+# dados_wide
+dados_receita <- dados_vendas %>%
+  group_by(Cidade, Produto) %>%
+  summarize(Receita_Total = sum(Receita)) %>% 
+  ungroup() 
+
+dados_wide <- dados_receita %>%
+  pivot_wider(names_from = Produto, values_from = Receita_Total, 
+              values_fill = 0)
+
+# dados_formiga_representantes
+dados_formiga_repres <- dados_formiga %>%
+  group_by(Produto, Representante) %>%
+  summarize(Receita = sum(Receita)) %>%
+  pivot_wider(names_from = Produto, values_from = Receita, values_fill = 0)
+```
+
+
+
+
+## 
+
+```{r}
+# Gráfico de Barras Horizontais anotado com a Receita Total por Cidade
+ggplot(receita_por_cidade,
+       aes(
+         x = reorder(Cidade, Receita_Total),
+         y = Receita_Total,
+         fill = Cidade
+       )) +
+  geom_col() +
+  coord_flip() +
+  geom_text(aes(
+    label = scales::label_number(
+      big.mark = ".",
+      decimal.mark = ",",
+      prefix = "R$ ",
+      accuracy = 0.01
+    )(Receita_Total)
+  ),
+  hjust = 1.1,
+  fontface = "bold") +
+  scale_fill_manual(
+    values = c(
+      "Formiga" = "coral2",
+      "Arcos" = "coral2",
+      "Pimenta" = "grey70",
+      "Piumhi" = "grey70"
+    )
+  ) +
+  theme_classic() +
+  theme(
+    # remove a legenda
+    legend.position = "none",
+    # aumenta a fonte para 15
+    plot.title = element_text(size = 15),
+    # tamanho da fonte dos rotulos do eixo y
+    axis.text.y = element_text(size = 12),
+    # tamanho da fonte dos rotulos do eixo x
+    axis.text.x = element_text(size = 10),
+    # remove nome do eixo x
+    axis.title.x = element_blank(),
+    # remove nome do eixo y
+    axis.title.y = element_blank()         
+  ) +
+  labs(title = "Receita Total por Município em 2023",
+       caption = "Fonte: Sistema ERP da Empresa.") +
+  ylim(0, 1600000)
+```
+
+
+
+
+## 
+
+```{r}
+# cria gráfico de barras interativo com highcharter
+highchart() %>%
+  
+  # Define o tipo de gráfico como "coluna" (barras verticais)
+  hc_chart(type = "column") %>%
+  
+  # Adiciona um título ao gráfico
+  hc_title(text = "Receita Total por Produto - Cidade de Formiga") %>%
+  
+  # Define as categorias do eixo X (os produtos vendidos na cidade de Formiga)
+  hc_xAxis(categories = dados_receita_formiga$Produto) %>%
+  
+  # Define o título do eixo Y, que representa a receita total em R$
+  hc_yAxis(title = list(text = "Receita Total (R$)")) %>%
+  
+  # Adiciona uma série de dados, que representa a receita total para cada produto
+  # A série é chamada de "Receita Total" e utiliza os dados da coluna Receita_Total
+  hc_add_series(
+    # Nome da série (aparece na legenda)
+    name = "Receita Total",  
+    # Dados da receita total para cada produto
+    data = dados_receita_formiga$Receita_Total  
+  ) %>%
+  
+  # Configura o tooltip, que mostra o valor detalhado quando passamos o mouse 
+  # sobre as barras
+  hc_tooltip(pointFormat = 'Receita: <b>R$ {point.y:.2f}</b>')
+```
+
+
+
+
+## 
+
+```{r}
+# receita total da cidade
+highchart() %>%
+  # Define o tipo de gráfico como "coluna"
+  hc_chart(type = "column") %>%  
+  # Título do gráfico
+  hc_title(text = "Receita Total por Produto em Cada Cidade") %>% 
+   # Define as categorias do eixo X (as cidades)
+  hc_xAxis(categories = dados_wide$Cidade) %>% 
+  # Define o título do eixo Y 
+  hc_yAxis(title = list(text = "Receita Total (R$)")) %>%  
+  # Adiciona uma série de dados para cada produto
+  # Cada série representa a receita de um produto em todas as cidades
+  hc_add_series(name = "Produto A", data = dados_wide$`Produto A`) %>%
+  hc_add_series(name = "Produto B", data = dados_wide$`Produto B`) %>%
+  hc_add_series(name = "Produto C", data = dados_wide$`Produto C`) %>%
+  
+  # Ativa o empilhamento das colunas para que as receitas dos produtos 
+  # sejam empilhadas
+  hc_plotOptions(column = list(stacking = "normal")) %>%
+  
+  # Define o comportamento do tooltip (informação que aparece ao 
+  # passar o mouse)
+  hc_tooltip(shared = TRUE, pointFormat = '{series.name}: <b>R$ {point.y:.2f}</b><br/>')
+```
+
+
+
+
+##
+
+```{r}
+# Cria o gráfico interativo com as colunas empilhadas
+highchart() %>%
+  # Define o tipo de gráfico como "coluna"
+  hc_chart(type = "column") %>%  
+  # Título do gráfico
+  hc_title(text = "Receita por Produto e Representante em Formiga") %>% 
+  # Define as categorias do eixo X (os representantes)
+  hc_xAxis(categories = dados_formiga_repres$Representante) %>% 
+  # Define o título do eixo Y
+  hc_yAxis(title = list(text = "Receita Total (R$)")) %>%  
+  # Adiciona uma série de dados para cada produto
+  # Cada série representa a receita de um produto em todos os representantes
+  hc_add_series(name = "Produto A", data = dados_formiga_repres$`Produto A`) %>%
+  hc_add_series(name = "Produto B", data = dados_formiga_repres$`Produto B`) %>%
+  hc_add_series(name = "Produto C", data = dados_formiga_repres$`Produto C`) %>%
+  
+  # Ativa o empilhamento das colunas para que as receitas dos produtos
+  # sejam empilhadas por representante
+  hc_plotOptions(column = list(stacking = "normal")) %>%
+  
+  # Define o comportamento do tooltip (informação que aparece ao
+  # passar o mouse)
+  hc_tooltip(shared = TRUE, pointFormat = '{series.name}: <b>R$ {point.y:.2f}</b><br/>')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

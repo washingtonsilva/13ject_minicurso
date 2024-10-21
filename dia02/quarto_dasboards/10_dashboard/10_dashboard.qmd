@@ -1,0 +1,44 @@
+---
+title: "Tabsets"
+format: 
+  dashboard:
+    logo: img/fusca.jpeg
+---
+
+```{r}
+library(ggplot2)
+```
+
+## Visão Geral {.tabset}
+
+### Objetivo
+
+Este painel resume uma análise sobre a economia de combustível de 
+carros.
+
+### Carro
+
+Isto é um carro
+
+![](img/fusca.jpeg){fig-alt="Ilustração de um carro." width="299"}
+
+
+
+
+## Gráficos {.tabset}
+
+### Scatter
+
+```{r}
+#| title: Highway vs. city mileage
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point()
+```
+
+### Bar
+
+```{r}
+#| title: Drive types
+ggplot(mpg, aes(x = drv)) +
+  geom_bar()
+```

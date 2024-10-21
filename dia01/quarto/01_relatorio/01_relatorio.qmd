@@ -1,0 +1,763 @@
+---
+title: "Relatório Quarto 1"
+subtitle: "Executando Um Ciclo Simples de Análise de Dados com R + Quarto + Rstudio"
+author: SEU NOME
+lang: pt
+format:
+  html:
+    theme: cosmos
+    toc: true
+    number-sections: true
+    self-contained: true
+    code-fold: true
+execute:
+  echo: true
+  message: false
+  warning: false
+editor: source
+---
+
+<style type="text/css">
+  body{
+  font-size: 13pt; 
+  text-align: justify
+      }
+</style>
+
+
+```{r}
+#| label: setup 
+
+# pacotes utilizados
+library(here)         # permite utilizar caminhos relativos de arquivos
+library(tidyverse)    # metapacote que inclui: readr, dplyr, ggplot2...
+library(skimr)        # para análise exploratória dos dados
+library(highcharter)  # criação de gráficos interativos
+library(gt)           # para criação de tabelas
+```
+
+
+# Descrição dos Dados 
+
+::: {.callout-note icon="false"}
+## Arquivo: `dados_vendas.csv`
+ 
+Cada linha no arquivo `dados_vendas.csv` corresponde a uma transação de 
+venda de um determinado produto, realizada em uma data específica, em um 
+município específico, por um representante de vendas específico, para 
+o ano de 2023.
+
+1. **`Data`**: Representa a data em que a venda ocorreu. Essas datas 
+foram amostradas aleatoriamente de um conjunto de todas as datas entre 1 de 
+janeiro de 2023 e 31 de dezembro de 2023. Isso significa que, em algumas 
+datas, pode haver várias transações e em outras, nenhuma.
+
+2. **`Cidade`**: Indica o município onde a venda foi realizada. 
+Os municípios possíveis são "Formiga", "Arcos", "Pimenta" e "Piumhi". 
+
+3. **`Representante`**: representante de vendas responsável 
+pela transação. Existem 20 representantes, identificados como "Representante 1", "Representante 2", até "Representante 20".
+
+4. **`Produto`**: produto vendido na transação. Os produtos possíveis são 
+"Produto A", "Produto B" e "Produto C".
+
+5. **`Unidades`**: Informa o número de unidades do produto 
+vendidas na transação. 
+
+6. **`preco_unitario`**: Mostra o preço unitário do produto vendido. 
+
+7. **`Receita`**: Representa a receita bruta (em R$) gerada pela transação, 
+que é calculada multiplicando o número de unidades vendidas (`Unidades`) pelo 
+preço unitário do produto (`preco_unitario`).
+
+
+Portanto, **cada linha (observação)** representa uma **transação de venda** 
+ocorrida em uma data específica, de um produto específico, vendido por um 
+representante específico em um dos 4 municípios. Os valores de unidades 
+vendidas, preço unitário e a receita gerada foram simulados aleatoriamente 
+para cada transação.
+:::
+
+
+
+# Importação do Arquivo de Dados 
+
+Vamos importar o arquivo `dados_vendas.csv` usando a função `here()` 
+do pacote `here` para podermos utilizar caminhos relativos e a
+função read:
+
+```{r}
+## define o caminho para o arquivo dados_vendas.csv
+caminho_csv <- here::here("dados/dados_vendas.csv")
+
+## importa os dados do arquivo .csv
+dados_vendas <- readr::read_csv(caminho_csv)
+```
+
+Verificando a estrutura dos dados importados:
+
+```{r}
+## verifica a estrutura dos dados importados
+dplyr::glimpse(dados_vendas)
+```
+
+
+Obtendo uma visão geral dos dados importados:
+
+```{r}
+## estatísticas básicas do objeto importado
+skim(dados_vendas)
+```
+
+
+
+# Transformação de Dados
+
+A estrutura adequada da linguagem R para armazenar variáveis categóricas 
+como `Cidade`, `Representante` e `Produto` é a classe `factor`, assim, 
+vamos transformar estas variáveis para esta classe usando a função 
+`mutate` do pacote `dplyr`:
+
+```{r}
+# transforma as variáveis Cidade, Representante e Produto para a classe factor
+dados_vendas <- dados_vendas %>%
+  mutate(
+    Cidade = as.factor(Cidade),
+    Representante = as.factor(Representante),
+    Produto = as.factor(Produto)
+  )
+
+dplyr::glimpse(dados_vendas)
+```
+
+Podemos visualizar as primeiras 6 linhas dos dados, após fazermos a 
+transformação anterior, com:
+
+```{r}
+head(dados_vendas)
+```
+
+
+
+# Sumarização de Dados
+
+##  Filtrar Linhas (Observações)
+
+Podemos usar a função `filter` do pacote `dplyr` para filtrar apenas as 
+transações que ocorreram em na cidade de Formiga, ou seja, para filtrar 
+as linhas (observações) que correspondam à cidade de Formiga:
+
+```{r}
+# Filtrar todas as vendas realizadas na cidade de "Formiga"
+formiga_vendas <- dados_vendas %>%
+  filter(Cidade == "Formiga")
+
+# Exibir as primeiras linhas
+head(formiga_vendas)
+```
+
+
+## Selecionar Colunas (Variáveis)
+
+A função `select` do dplyr permite selecionarmos variáveis específicas. 
+Podemos fazer isso com:
+
+```{r}
+# Selecionar as colunas Data, Cidade e Receita
+vendas_selecionadas <- dados_vendas %>%
+  select(Data, Cidade, Receita)
+
+# Exibir as primeiras linhas
+head(vendas_selecionadas)
+```
+
+
+## Agrupar e Sumarizar
+
+A combinação das funções `group_by` e `summarize` do pacote dplyr permite 
+a criação de dados similares às tabelas dinâmicas do MS Excel. 
+
+O código a seguir mostra como é simples realizar sumarizações complexas 
+usando linguagem R:
+
+```{r}
+# Agrupar as vendas por cidade e calcular a receita total por cidade
+receita_por_cidade <- dados_vendas %>%
+  group_by(Cidade) %>%
+  summarize(Receita_Total = sum(Receita))
+
+# Exibir o resultado
+receita_por_cidade
+```
+
+
+## Ordenar pela Maior Receita
+
+Podemos facilmente ordenar a receita total por cidade, em 
+ordem decrescente, usando a função `arrange`:
+
+```{r}
+receita_por_cidade <- dados_vendas %>%
+  group_by(Cidade) %>%
+  summarize(Receita_Total = sum(Receita)) %>%
+  arrange(desc(Receita_Total))
+
+# Exibir o resultado
+receita_por_cidade
+
+```
+
+
+## Filtrar por Múltiplas Condições e Ordenar 
+
+Podemos combinar condições múltiplas para filtrar as linhas 
+(transações) que foram realizadas em Formiga. 
+
+Por exemplo, para filtrar as transações que geraram receitas acima de 1000 e 
+ordenar os resultados pela receita, podemos utilizar:
+
+```{r}
+# Filtrar vendas realizadas em "Formiga" e com Receita maior que 1000
+formiga_receita_alta <- dados_vendas %>%
+  filter(Cidade == "Formiga", Receita > 1000) %>%
+  arrange(desc(Receita))
+
+# Exibir as primeiras linhas
+head(formiga_receita_alta)
+```
+
+
+## Contar Itens
+
+Podemos obter o número de transações realizadas por cada representante, 
+em ordem decrescente, combinando novamente as funções `group_by`, `summarize` 
+e `arrange`:
+
+```{r}
+# Contar o número de transações realizadas por cada representante
+transacoes_por_representante <- dados_vendas %>%
+  group_by(Representante) %>%
+  summarize(Contagem_Transacoes = n()) %>% 
+  arrange(desc(Contagem_Transacoes))
+
+
+# Exibir o resultado
+transacoes_por_representante
+```
+
+E se quisermos obter os representantes que realizaram as transações que 
+geraram a maior receita total, em ordem decrescente?
+
+```{r}
+# Calcular a receita total por representante e ordenar em ordem decrescente
+representantes_maior_receita <- dados_vendas %>%
+  group_by(Representante) %>%
+  summarize(Receita_Total = sum(Receita)) %>%
+  arrange(desc(Receita_Total))
+
+# Exibir o resultado
+representantes_maior_receita
+```
+
+
+
+## Calcular Estatísticas por Grupos
+
+É simples calcular a média de unidades vendidas por produto em cada cidade 
+combinando as funções `group_by` e `summarize`
+
+```{r}
+# Calcular a média de unidades vendidas por produto e cidade
+media_unidades <- dados_vendas %>%
+  group_by(Cidade, Produto) %>%
+  summarize(Media_Unidades = mean(Unidades))
+
+# Exibir o resultado
+media_unidades
+```
+
+
+E se quisermos calcular a receita média por representante e por produto? 
+Podemos obter com:
+
+```{r}
+# Calcular a receita média por representante e por produto
+receita_media_representante_produto <- dados_vendas %>%
+  group_by(Representante, Produto) %>%
+  summarize(Receita_Media = mean(Receita))
+
+# Exibir o resultado
+receita_media_representante_produto
+```
+
+
+
+# Visualização de Dados 
+
+## Tabelas Estáticas
+
+A criação de tabelas programaticamente com o pacote `gt` em R oferece 
+diversas vantagens, como flexibilidade na formatação, possibilidade de 
+adicionar estilos personalizados e recursos avançados como mapas de calor e 
+formatação de moeda. 
+
+Com o `gt`, é possível automatizar a geração de tabelas dinâmicas e 
+altamente personalizáveis, tornando o processo mais eficiente e
+garantindo uma apresentação profissional e consistente dos dados.
+
+Inicialmente, vamos criar uma tabela com a receita total, por produto, para a 
+cidade de Formiga. No código a seguir, em primeiro, criamos os dados 
+necessários para a tabela usando as funções do pacote `dplyr` que 
+vimos anteriormente, em seguida, criamos a tabela usando funções 
+do pacote `gt`:
+
+
+```{r}
+# Filtra as vendas da cidade de Formiga
+dados_formiga <- dados_vendas %>%
+  filter(Cidade == "Formiga")
+
+# Agrupa as vendas por produto e soma as receitas
+receita_por_produto <- dados_formiga %>%
+  group_by(Produto) %>%
+  summarize(Receita = sum(Receita))
+
+# Cria uma tabela da receita, por produto, para Formiga
+tabela_receita <- receita_por_produto %>%
+  gt() %>%
+  tab_header(
+    title = "Receita por Produto - Cidade de Formiga",
+    subtitle = "Ano: 2023"
+  )
+
+# Exibe a tabela
+tabela_receita
+```
+
+
+Certamente, a tabela será aperfeicoada se formatarmos os dados da 
+receita das vendas por produto como unidades monetárias, podemos 
+fazer isso com a função `fmt_currency` do pacote `gt`:
+
+```{r}
+# Cria uma tabela da receita, por produto, para Formiga
+tabela_receita_formatada <- receita_por_produto %>%
+  gt() %>%
+  # Adiciona um título à tabela
+  tab_header(
+    title = "Receita por Produto - Cidade de Formiga", 
+    subtitle = "Ano: 2023"
+  ) %>%
+  # Formata a coluna de Receita como moeda brasileira (R$)
+  fmt_currency(
+    columns = vars(Receita),  # A coluna "Receita" será formatada
+    currency = "BRL"          # Especifica que a moeda é o Real (R$)
+  )
+
+# Exibir a tabela
+tabela_receita_formatada
+```
+
+
+Para criarmos uma tabela contendo a receita de vendas por produto para 
+cada uma das 4 cidades, basta criarmos os dados necessários usando as 
+funções apropriadas do pacote `dplyr`. Além disso, vamos inserir a 
+fonte dos dados ao final da tabela:
+
+```{r}
+# Carregar pacotes necessários
+library(gt)
+
+# Calcula a receita total por cidade e produto e 
+# armarzena o resultado no objeto tabela_receita
+tabela_receita <- dados_vendas %>%
+  group_by(Cidade, Produto) %>%
+  summarize(Receita_Total = sum(Receita)) %>%
+  arrange(desc(Receita_Total))
+
+# Criar uma tabela usando gt
+tabela_receita %>%
+  # Inicia a construção da tabela a partir do objeto 'tabela_receita'
+  gt() %>%
+  # Adiciona um cabeçalho à tabela com título e subtítulo
+  tab_header(
+    title = "Receita Total por Cidade e Produto",
+    subtitle = "Ano: 2023"
+  ) %>%
+  # Formata a coluna 'Receita_Total' como moeda brasileira
+  fmt_currency(
+    columns = vars(Receita_Total),
+    currency = "BRL"
+  ) %>%
+  # Renomeia as colunas
+  cols_label(
+    Cidade = "Município",
+    Produto = "Produto Vendido",
+    Receita_Total = "Receita Total"
+  ) %>%
+   # Aplica estilo aos cabeçalhos das colunas (negrito)
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(everything())
+  ) %>%
+ # Adiciona a fonte dos dados ao final da tabela
+  tab_source_note(
+    source_note = "Fonte: Sistema ERP da Empresa."
+  )
+```
+
+
+Em algumas situações, é interessante acrescentar um mapa de calor às 
+variáveis numéricas, podemos fazer isso com a função `data_color` do 
+pacote `gt`:
+
+```{r}
+# Criar tabela usando o pacote gt 
+tabela_receita %>%
+  gt() %>%
+  # Adiciona um cabeçalho à tabela com título e subtítulo
+  tab_header(
+    title = "Receita Total por Cidade e Produto",
+    subtitle = "Ano: 2023"
+  ) %>%
+  # Formata a coluna 'Receita_Total' como moeda brasileira
+  fmt_currency(
+    columns = vars(Receita_Total),
+    currency = "BRL"
+  ) %>%
+  # Renomeia as colunas
+  cols_label(
+    Cidade = "Município",
+    Produto = "Produto Vendido",
+    Receita_Total = "Receita Total"
+  ) %>%
+  # Aplica estilo aos cabeçalhos das colunas (negrito)
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(everything())
+  ) %>%
+  # Aplica um mapa de calor à coluna 'Receita_Total'
+  data_color(
+    columns = vars(Receita_Total),
+    colors = scales::col_numeric(
+      palette = c("lightblue", "blue"),
+      domain = range(tabela_receita$Receita_Total)
+    )
+  ) %>%
+ # Adiciona a fonte dos dados ao final da tabela
+tab_source_note(
+  source_note = "Fonte: Sistema ERP da Empresa."
+  )
+```
+
+
+## Tables Interativas
+
+É possível criar diversos tipos de tabelas interativas em R. Utilizando 
+o pacote `reacttable`, para criar uma tabela interativa simples, 
+tudo o que temos que fazer é passar os dados para a função `reactable`:
+
+```{r}
+library(reactable)
+
+reactable(tabela_receita)
+```
+
+Em seguida, podemos melhoar a tabela definindo que os valores exibidos 
+para a receita total devem ter o formato do real brasileiro, que ao 
+passar o mouse sobre uma linha ela é destacada com uma cor. Além disso, 
+podemos definir uma borda para a tabela:
+
+```{r}
+# Criar a tabela interativa com reactable
+reactable(
+  tabela_receita,
+  pagination = FALSE,
+  columns = list(Receita_Total = colDef(
+    format = colFormat(currency = "BRL", separators = TRUE)
+  )),
+  highlight = TRUE,
+  bordered = TRUE
+)
+```
+
+Podemos ainda inserir um título e um subtítulo usando funções do 
+pacote `reactablefmtr`:
+
+```{r}
+library(reactablefmtr)
+
+# Criar a tabela interativa com reactable
+reactable(
+  tabela_receita,
+  pagination = FALSE,
+  columns = list(Receita_Total = colDef(
+    format = colFormat(currency = "BRL", separators = TRUE)
+  )),
+  highlight = TRUE,
+  bordered = TRUE
+) %>%  
+  add_title(
+    title = 'Receita Total por Cidade e Produto'
+  ) %>%  
+  add_subtitle(
+    subtitle = 'Ano: 2023',
+    font_weight = 'normal'
+  )
+
+```
+
+
+
+## Gráficos Estáticos
+
+Um gráfico de barras (ou colunas) básico pode ser criado usando 
+o pacote `ggplot2` com:
+
+```{r}
+
+# Cria o gráfico de barras horizontal ordenado
+ggplot(receita_por_cidade, aes(x = reorder(Cidade, Receita_Total), y = Receita_Total)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "Município", y = "Receita Total", title = "Receita Total por Município")
+```
+
+Um gráfico personalizado e com qualidade de publicação pode ser 
+criado com:
+
+```{r}
+ggplot(receita_por_cidade,
+       aes(
+         x = reorder(Cidade, Receita_Total),
+         y = Receita_Total,
+         fill = Cidade
+       )) +
+  geom_col() +
+  coord_flip() +
+  geom_text(aes(
+    label = scales::label_number(
+      big.mark = ".",
+      decimal.mark = ",",
+      prefix = "R$ ",
+      accuracy = 0.01
+    )(Receita_Total)
+  ),
+  hjust = 1.1,
+  fontface = "bold") +
+  scale_fill_manual(
+    values = c(
+      "Formiga" = "coral2",
+      "Arcos" = "coral2",
+      "Pimenta" = "grey70",
+      "Piumhi" = "grey70"
+    )
+  ) +
+  theme_classic() +
+  theme(
+    # remove a legenda
+    legend.position = "none",
+    # aumenta a fonte para 15
+    plot.title = element_text(size = 15),
+    # tamanho da fonte dos rotulos do eixo y
+    axis.text.y = element_text(size = 12, face = "bold"),
+    # tamanho da fonte dos rotulos do eixo x
+    axis.text.x = element_text(size = 10),
+    # remove nome do eixo x
+    axis.title.x = element_blank(),
+    # remove nome do eixo y
+    axis.title.y = element_blank()         
+  ) +
+  labs(title = "Receita Total por Município em 2023",
+       caption = "Fonte: Sistema ERP da Empresa.") +
+  ylim(0, 1600000)
+```
+
+
+## Gráficos Interativos
+
+Agora, vamos criar um gráfico de barras interativo com o pacote 
+`highcharter`. Em primeiro lugar, precisamos criar os dados 
+necessários para o gráfico:
+
+```{r}
+# A função filter() do dplyr é usada para filtrar apenas as linhas
+# que correspondem à cidade de "Formiga" na coluna "Cidade".
+dados_formiga <- dados_vendas %>%
+  filter(Cidade == "Formiga")
+
+# group_by() agrupa os dados pelo nome do produto, e summarize() calcula
+# a receita total (somando a coluna "Receita") para cada produto.
+dados_receita_formiga <- dados_formiga %>%
+  group_by(Produto) %>%
+  summarize(Receita_Total = sum(Receita))
+```
+
+
+Agora que criamos os dados necessários, podemos criar um gráfico de colunas 
+empilhadas.
+
+```{r}
+# cria gráfico de barras interativo com highcharter
+highchart() %>%
+  
+  # Define o tipo de gráfico como "coluna" (barras verticais)
+  hc_chart(type = "column") %>%
+  
+  # Adiciona um título ao gráfico
+  hc_title(text = "Receita Total por Produto - Cidade de Formiga") %>%
+  
+  # Define as categorias do eixo X (os produtos vendidos na cidade de Formiga)
+  hc_xAxis(categories = dados_receita_formiga$Produto) %>%
+  
+  # Define o título do eixo Y, que representa a receita total em R$
+  hc_yAxis(title = list(text = "Receita Total (R$)")) %>%
+  
+  # Adiciona uma série de dados, que representa a receita total para cada produto
+  # A série é chamada de "Receita Total" e utiliza os dados da coluna Receita_Total
+  hc_add_series(
+    # Nome da série (aparece na legenda)
+    name = "Receita Total",  
+    # Dados da receita total para cada produto
+    data = dados_receita_formiga$Receita_Total  
+  ) %>%
+  
+  # Configura o tooltip, que mostra o valor detalhado quando passamos o mouse 
+  # sobre as barras
+  hc_tooltip(pointFormat = 'Receita: <b>R$ {point.y:.2f}</b>')
+```
+
+
+Agora, vamos criar um gráfico de colunas empilhadas para visualizar a 
+participação dos produtos em termos de receita em cada uma das cidades. 
+Como sempre, inicialmente, precisamos criar os dados necessários 
+para o gráfico que desejamos gerar:
+
+
+```{r}
+# Agrupa os dados por Cidade e Produto e calcular a soma das receitas.
+# Aqui estamos usando o dplyr para agrupar os dados e calcular a receita total
+# A função group_by() agrupa os dados, e summarize() calcula a soma da receita 
+# por grupo
+dados_receita <- dados_vendas %>%
+  group_by(Cidade, Produto) %>%
+  # Calcula a receita total para cada cidade e produto
+  summarize(Receita_Total = sum(Receita)) %>% 
+  ungroup()  # Remove os agrupamentos para evitar problemas posteriores
+
+# exibe as primeiras linhas de dados_receita
+head(dados_receita)
+
+# Como os dados estão no formato "longo" (cada linha representa uma combinação 
+# de cidade e produto), precisamos reorganizá-los para criar o gráfico de 
+# colunas empilhadas. A função pivot_wider transforma os dados de formato 
+# "longo" para "largo"
+dados_wide <- dados_receita %>%
+  pivot_wider(names_from = Produto, values_from = Receita_Total, 
+              values_fill = 0)
+
+# exibe as primeiras linhas de dados_wide
+head(dados_wide)
+```
+
+O gráfico vai mostrar a receita total por cidade, com as 
+colunas empilhadas para mostrar a contribuição de cada produto para a 
+receita total:
+
+```{r}
+# receita total da cidade
+highchart() %>%
+  # Define o tipo de gráfico como "coluna"
+  hc_chart(type = "column") %>%  
+  # Título do gráfico
+  hc_title(text = "Receita Total por Produto em Cada Cidade") %>% 
+   # Define as categorias do eixo X (as cidades)
+  hc_xAxis(categories = dados_wide$Cidade) %>% 
+  # Define o título do eixo Y 
+  hc_yAxis(title = list(text = "Receita Total (R$)")) %>%  
+  # Adiciona uma série de dados para cada produto
+  # Cada série representa a receita de um produto em todas as cidades
+  hc_add_series(name = "Produto A", data = dados_wide$`Produto A`) %>%
+  hc_add_series(name = "Produto B", data = dados_wide$`Produto B`) %>%
+  hc_add_series(name = "Produto C", data = dados_wide$`Produto C`) %>%
+  
+  # Ativa o empilhamento das colunas para que as receitas dos produtos 
+  # sejam empilhadas
+  hc_plotOptions(column = list(stacking = "normal")) %>%
+  
+  # Define o comportamento do tooltip (informação que aparece ao 
+  # passar o mouse)
+  hc_tooltip(shared = TRUE, pointFormat = '{series.name}: <b>R$ {point.y:.2f}</b><br/>')
+```
+
+
+Por fim, vamos criar um gráfico mostrará a receita de cada produto e a 
+contribuição de cada representante para as vendas na cidade de Formiga, 
+com as colunas empilhadas para facilitar a visualização da participação 
+de cada representante.
+
+Os dados necessários para criar este gráfico podem ser criados usando 
+as funções do pacote `dplyr` com:
+
+
+```{r}
+# Filtrar os dados para a cidade de Formiga
+dados_formiga <- dados_vendas %>%
+  filter(Cidade == "Formiga")
+
+# Agrupar os dados por produto e representante e somar as receitas
+dados_formiga_repres <- dados_formiga %>%
+  group_by(Produto, Representante) %>%
+  summarize(Receita = sum(Receita)) %>%
+  pivot_wider(names_from = Produto, values_from = Receita, values_fill = 0)
+```
+
+
+E o gráfico interativo de barras empilhadas pode ser criado com:
+
+
+```{r}
+# Cria o gráfico interativo com as colunas empilhadas
+highchart() %>%
+  # Define o tipo de gráfico como "coluna"
+  hc_chart(type = "column") %>%  
+  # Título do gráfico
+  hc_title(text = "Receita por Produto e Representante em Formiga") %>% 
+  # Define as categorias do eixo X (os representantes)
+  hc_xAxis(categories = dados_formiga_repres$Representante) %>% 
+  # Define o título do eixo Y
+  hc_yAxis(title = list(text = "Receita Total (R$)")) %>%  
+  # Adiciona uma série de dados para cada produto
+  # Cada série representa a receita de um produto em todos os representantes
+  hc_add_series(name = "Produto A", data = dados_formiga_repres$`Produto A`) %>%
+  hc_add_series(name = "Produto B", data = dados_formiga_repres$`Produto B`) %>%
+  hc_add_series(name = "Produto C", data = dados_formiga_repres$`Produto C`) %>%
+  
+  # Ativa o empilhamento das colunas para que as receitas dos produtos
+  # sejam empilhadas por representante
+  hc_plotOptions(column = list(stacking = "normal")) %>%
+  
+  # Define o comportamento do tooltip (informação que aparece ao
+  # passar o mouse)
+  hc_tooltip(shared = TRUE, pointFormat = '{series.name}: <b>R$ {point.y:.2f}</b><br/>')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

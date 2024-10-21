@@ -1,52 +1,47 @@
+
 # Workshop: Introdução à Linguagem R e ao Sistema Quarto
 
-Este repositório contém os arquivos necessários para o Workshop 
-*Introdução à Linguagem R e ao Sistema Quarto* ministrado 
-durante XIII Jornada de Educação, Ciência e Tecnologia do 
-IFMG - Campus Formiga, nos dias 22/10/2024 e 23/10/2024.
+Bem-vindo ao *Workshop de Introdução à Linguagem R e ao Sistema Quarto*, que 
+será realizado durante a **XIII Jornada de Educação, Ciência e Tecnologia** 
+do IFMG - Campus Formiga, nos dias **22/10/2024** e **23/10/2024**.
 
-Para baixar o conteúdo deste repositório, clique no botão verde "Code" 
-e em seguida em "Download  ZIP". Após baixar o arquivo compactado, 
-descompacte-o em seu computador.
+Este repositório contém todos os arquivos e recursos necessários para 
+acompanhar o workshop.
 
-A pasta denominada `13ject_minicurso` contém um RStudio Project, 
-que é um arquivo de texto com a extensão `.Rproj`. Para abrir o 
-projeto, basta clicar duas vezes sobre o arquivo `13ject_minicurso.Rproj`. 
+## Como Baixar o Conteúdo
 
-Caso o projeto não seja aberto no RStudio, abra o RStudio e clique 
-em "File" -> "Open Project" e selecione o arquivo `13ject_minicurso.Rproj`.
+1. Clique no botão verde **"Code"** no topo da página do repositório.
+2. Selecione a opção **"Download ZIP"**.
+3. Após o download, descompacte o arquivo no seu computador.
 
-Após descompactar o arquivo, caso apareça uma pasta denominada 
-MACOSX, você pode apagá-la sem problemas.
+Dentro do repositório, você encontrará a pasta `13ject_minicurso`, que 
+contém o projeto do RStudio. Para abri-lo, basta seguir um dos passos abaixo:
 
+- **Opção 1**: Clique duas vezes no arquivo `13ject_minicurso.Rproj`.
+- **Opção 2**: Abra o RStudio, vá em **"File"** > **"Open Project"** e \
+               selecione o arquivo `13ject_minicurso.Rproj`.
 
-## Tópicos Abortados
+> **Nota**: Caso apareça uma pasta chamada `MACOSX` após descompactar o arquivo, você pode apagá-la sem problemas.
 
-### Dia 1
+---
 
-- Curso Relâmpago sobre R + RStudio + Quarto.
+## Tópicos Abordados
 
-- Atividades: Implementação do Ciclo de Análise de Dados 
-  com R + RStudio + Quarto.
-  
-### Dia 2
+### **Dia 1: Curso Relâmpago sobre R + RStudio + Quarto**
+- **Atividade**: Implementação do ciclo completo de Análise de Dados com R, RStudio e Quarto.
 
-- Quarto Dashboards.
+### **Dia 2: Quarto Dashboards e Aplicativos Web**
+- **Quarto Dashboards**: Desenvolvimento de dashboards interativos.
+- **Aplicativos Web com Shiny**: Introdução ao Shiny para criação de aplicativos web dinâmicos.
+- **Dashboards com Shiny e Shinydashboard**: Criação de dashboards customizados utilizando os pacotes `shiny` e `shinydashboard`.
 
-- Aplicativos Web com shiny.
+---
 
-- Dashboards com shiny e shinydashboard.
-  
+## Estrutura do Repositório
 
+- **dados**: Contém o arquivo `dados_vendas.csv` para ser utilizado durante o workshop.
+- **dia01**: Arquivos relacionados às atividades do primeiro dia.
+- **dia02**: Arquivos relacionados às atividades do segundo dia.
+- **resumos**: Cheatsheets da linguagem R, Quarto e diversos pacotes úteis.
+- **slides**: Apresentações utilizadas ao longo do workshop.
 
-## Estrutura do Repositório 
-
-- `dados`: contém o arquivo `dados_vendas.csv`.
-
-- `dia01`: contém os arquivos referentes ao primeiro dia do workshop.
-
-- `dia02`: contém os arquivos referentes ao segundo dia do workshop.
-
-- `resumos`: contém cheatsheets da linguagem R, Quarto e de diversos pacotes.
-
-- `slides`: contém os slides utilizados no workshop.

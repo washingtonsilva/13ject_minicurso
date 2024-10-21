@@ -47,6 +47,7 @@ contém o projeto do RStudio. Para abri-lo, basta seguir um dos passos abaixo:
              minicurso.
 - **dia01**: Arquivos relacionados às atividades do primeiro dia.
 - **dia02**: Arquivos relacionados às atividades do segundo dia.
-- **resumos**: Cheatsheets da linguagem R, Quarto e diversos pacotes úteis.
+- **resumos**: arquivos contendo resumos da linguagem R, Quarto e sobre 
+               diversos outros pacotes importantes.
 - **slides**: Apresentações utilizadas nos 2 dias do minicurso.
 

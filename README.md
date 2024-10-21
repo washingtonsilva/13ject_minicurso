@@ -1,14 +1,16 @@
 
-# Workshop: Introdução à Linguagem R e ao Sistema Quarto
+# Minicurso: Introdução à Linguagem R e ao Sistema Quarto
 
-![Banner do Minicurso](minicurso.png)
+![](minicurso.png)
 
-Bem-vindo ao *Workshop de Introdução à Linguagem R e ao Sistema Quarto*, que 
+Bem-vindo ao *Minicurso de Introdução à Linguagem R e ao Sistema Quarto*, que 
 será realizado durante a **XIII Jornada de Educação, Ciência e Tecnologia** 
-do IFMG - Campus Formiga, nos dias **22/10/2024** e **23/10/2024**.
+do IFMG - Campus Formiga, nos dias **22/10/2024** e **23/10/2024**, entre 
+**20:40** e **22:40 horas**, no Laboratório de Informática 1, localizado 
+no 2^o^ andar do Bloco B.
 
-Este repositório contém todos os arquivos e recursos necessários para 
-acompanhar o workshop.
+Este repositório contém os arquivos e recursos necessários para 
+acompanhar o minicurso.
 
 ## Como Baixar o Conteúdo
 
@@ -41,9 +43,10 @@ contém o projeto do RStudio. Para abri-lo, basta seguir um dos passos abaixo:
 
 ## Estrutura do Repositório
 
-- **dados**: Contém o arquivo `dados_vendas.csv` para ser utilizado durante o workshop.
+- **dados**: Contém o arquivo `dados_vendas.csv` para ser utilizado durante o 
+             minicurso.
 - **dia01**: Arquivos relacionados às atividades do primeiro dia.
 - **dia02**: Arquivos relacionados às atividades do segundo dia.
 - **resumos**: Cheatsheets da linguagem R, Quarto e diversos pacotes úteis.
-- **slides**: Apresentações utilizadas ao longo do workshop.
+- **slides**: Apresentações utilizadas nos 2 dias do minicurso.
 

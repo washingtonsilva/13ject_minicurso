@@ -1,6 +1,4 @@
 
-# Minicurso: Introdução à Linguagem R e ao Sistema Quarto
-
 ![](minicurso.png)
 
 Bem-vindo ao *Minicurso de Introdução à Linguagem R e ao Sistema Quarto*, que 

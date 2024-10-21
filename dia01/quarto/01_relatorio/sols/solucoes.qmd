@@ -1,0 +1,198 @@
+---
+title: "Soluções das Atividades"
+author: SEU NOME
+lang: pt
+format:
+  html:
+    theme: cosmos
+    toc: true
+    number-sections: true
+    self-contained: true
+    code-fold: true
+execute:
+  echo: true
+  message: false
+  warning: false
+editor: source
+---
+
+<style type="text/css">
+  body{
+  font-size: 13pt; 
+  text-align: justify
+      }
+</style>
+
+
+```{r}
+#| label: setup 
+
+# pacotes utilizados
+library(here)         # permite utilizar caminhos relativos de arquivos
+library(tidyverse)    # metapacote que inclui: readr, dplyr, ggplot2...
+library(skimr)        # para análise exploratória dos dados
+library(highcharter)  # criação de gráficos interativos
+library(gt)           # para criação de tabelas
+
+# Importa o arquivo de dados 
+
+## define o caminho para o arquivo dados_vendas.csv
+caminho_csv <- here::here("dados/dados_vendas.csv")
+
+## importa os dados do arquivo .csv
+dados_vendas <- readr::read_csv(caminho_csv)
+
+# transforma as variáveis Cidade, Representante e Produto para a classe factor
+dados_vendas <- dados_vendas %>%
+  mutate(
+    Cidade = as.factor(Cidade),
+    Representante = as.factor(Representante),
+    Produto = as.factor(Produto)
+  )
+```
+
+
+
+# Sumarização de Dados
+
+##  Filtrar Linhas (Observações)
+
+### Sua Vez
+
+Filtre as transações que ocorreram na cidade de "Arcos" e exiba as primeiras 
+linhas do resultado.
+
+```{r}
+# Filtra as vendas realizadas na cidade de "Arcos"
+arcos_vendas <- dados_vendas %>%
+  filter(Cidade == "Arcos")
+
+# Exibe as primeiras inhas
+head(arcos_vendas)
+```
+
+
+
+
+## Selecionar Colunas (Variáveis)
+
+### Sua Vez
+
+Selecione as colunas Data, Representante e Receita e exiba as primeiras 
+linhas.
+
+```{r}
+# Selecionaa as colunas Data, Representante e Receita
+vendas_selecionadas <- dados_vendas %>%
+  select(Data, Representante, Receita)
+
+# Exibe as primeiras 5 linhas
+head(vendas_selecionadas, 5)
+```
+
+
+
+
+## Agrupar e Sumarizar
+
+### Sua Vez
+
+Agrupe as vendas por Produto e calcule a receita total para cada 
+produto. Exiba o resultado.
+
+```{r}
+# Agrupa as vendas por produto e calcula a receita total por produto
+receita_por_produto <- dados_vendas %>%
+  group_by(Produto) %>%
+  summarize(Receita_Total = sum(Receita))
+
+# Exibe o resultado
+receita_por_produto
+```
+
+
+
+## Ordenar pela Maior Receita
+
+### Sua Vez
+
+Ordene os produtos pela receita total gerada, em ordem decrescente, e 
+exiba o resultado.
+
+```{r}
+# Agrupa as vendas por cidade e calcula a receita total, 
+# ordenando os dados pela receita total em ordem decrescente
+receita_por_produto <- dados_vendas %>%
+  group_by(Produto) %>%
+  summarize(Receita_Total = sum(Receita)) %>%
+  arrange(desc(Receita_Total))
+
+# Exibe o resultado
+receita_por_produto
+```
+
+
+
+
+## Filtrar por Múltiplas Condições e Ordenar 
+
+### Sua Vez
+
+Filtre as transações realizadas em "Pimenta" que geraram receitas acima 
+de 1000 reais e ordene os resultados pela receita em ordem decrescente. 
+Exiba as primeiras linhas.
+
+```{r}
+# Filtra as vendas realizadas em "Pimenta" com Receita maior que 1000
+pimenta_receita_alta <- dados_vendas %>%
+  filter(Cidade == "Pimenta", Receita > 1000) %>%
+  arrange(desc(Receita))
+
+# Exibe as primeiras linhas
+head(pimenta_receita_alta)
+```
+
+
+
+
+## Contar Itens
+
+### Sua Vez
+
+Conte o número de transações realizadas por cada representante e exiba os 
+três representantes com o maior número de transações.
+
+```{r}
+# Conta o número de transações por representante e ordena os 
+# resultados em ordem decrescente
+transacoes_por_representante <- dados_vendas %>%
+  group_by(Representante) %>%
+  summarize(Contagem_Transacoes = n()) %>%
+  arrange(desc(Contagem_Transacoes))
+
+# Exibe os três representantes com o maior número de transações
+head(transacoes_por_representante, 3)
+```
+
+
+
+
+## Calcular Estatísticas por Grupos
+
+### Sua Vez
+
+Calcule o número total de unidades vendidas por cada representante e exiba 
+os três representantes que venderam o maior número de unidades.
+
+```{r}
+# Calculaa a média de unidades vendidas por produto e cidade
+media_unidades <- dados_vendas %>%
+  group_by(Cidade, Produto) %>%
+  summarize(Media_Unidades = mean(Unidades))
+
+# Exibe o resultado
+media_unidades
+```
+
+
+

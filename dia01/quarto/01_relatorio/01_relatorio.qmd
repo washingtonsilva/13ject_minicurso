@@ -1,12 +1,13 @@
 ---
 title: "Relatório Quarto 1"
-subtitle: "Executando Um Ciclo Simples de Análise de Dados com R + Quarto + Rstudio"
+subtitle: "Executando Algumas etapas de um Ciclo de Análise de Dados com R + Quarto + Rstudio"
 author: SEU NOME
 lang: pt
 format:
   html:
     theme: cosmos
     toc: true
+    toc-depth: 2
     number-sections: true
     self-contained: true
     code-fold: true
@@ -148,13 +149,19 @@ transações que ocorreram em na cidade de Formiga, ou seja, para filtrar
 as linhas (observações) que correspondam à cidade de Formiga:
 
 ```{r}
-# Filtrar todas as vendas realizadas na cidade de "Formiga"
+# Filtra as vendas realizadas na cidade de "Formiga"
 formiga_vendas <- dados_vendas %>%
   filter(Cidade == "Formiga")
 
-# Exibir as primeiras linhas
+# Exibe as primeiras linhas
 head(formiga_vendas)
 ```
+
+### Sua Vez 
+
+Filtre as transações que ocorreram na cidade de "Arcos" e exiba as primeiras 
+linhas do resultado.
+
 
 
 ## Selecionar Colunas (Variáveis)
@@ -163,13 +170,19 @@ A função `select` do dplyr permite selecionarmos variáveis específicas.
 Podemos fazer isso com:
 
 ```{r}
-# Selecionar as colunas Data, Cidade e Receita
+# Seleciona as colunas Data, Cidade e Receita
 vendas_selecionadas <- dados_vendas %>%
   select(Data, Cidade, Receita)
 
-# Exibir as primeiras linhas
+# Exibe as primeiras linhas
 head(vendas_selecionadas)
 ```
+
+### Sua Vez 
+
+Selecione as colunas Data, Representante e Receita e exiba as primeiras 
+linhas.
+
 
 
 ## Agrupar e Sumarizar
@@ -181,14 +194,20 @@ O código a seguir mostra como é simples realizar sumarizações complexas
 usando linguagem R:
 
 ```{r}
-# Agrupar as vendas por cidade e calcular a receita total por cidade
+# Agrupa as vendas por cidade e calcula a receita total por cidade
 receita_por_cidade <- dados_vendas %>%
   group_by(Cidade) %>%
   summarize(Receita_Total = sum(Receita))
 
-# Exibir o resultado
+# Exibe o resultado
 receita_por_cidade
 ```
+
+### Sua Vez
+
+Agrupe as vendas por Produto e calcule a receita total para cada 
+produto. Exiba o resultado.
+
 
 
 ## Ordenar pela Maior Receita
@@ -197,15 +216,22 @@ Podemos facilmente ordenar a receita total por cidade, em
 ordem decrescente, usando a função `arrange`:
 
 ```{r}
+# Calcula e ordena a receita total, por cidade, em ordem decrescente
 receita_por_cidade <- dados_vendas %>%
   group_by(Cidade) %>%
   summarize(Receita_Total = sum(Receita)) %>%
   arrange(desc(Receita_Total))
 
-# Exibir o resultado
+# Exibe o resultado
 receita_por_cidade
 
 ```
+
+### Sua Vez
+
+Ordene os produtos pela receita total gerada, em ordem decrescente, e 
+exiba o resultado.
+
 
 
 ## Filtrar por Múltiplas Condições e Ordenar 
@@ -217,14 +243,21 @@ Por exemplo, para filtrar as transações que geraram receitas acima de 1000 e
 ordenar os resultados pela receita, podemos utilizar:
 
 ```{r}
-# Filtrar vendas realizadas em "Formiga" e com Receita maior que 1000
+# Filtra as vendas realizadas em "Formiga" e com Receita maior que 1000
 formiga_receita_alta <- dados_vendas %>%
   filter(Cidade == "Formiga", Receita > 1000) %>%
   arrange(desc(Receita))
 
-# Exibir as primeiras linhas
+# Exibe as primeiras linhas
 head(formiga_receita_alta)
 ```
+
+### Sua Vez
+
+Filtre as transações realizadas em "Pimenta" que geraram receitas acima 
+de 1000 reais e ordene os resultados pela receita em ordem decrescente. 
+Exiba as primeiras linhas.
+
 
 
 ## Contar Itens
@@ -234,14 +267,14 @@ em ordem decrescente, combinando novamente as funções `group_by`, `summarize`
 e `arrange`:
 
 ```{r}
-# Contar o número de transações realizadas por cada representante
+# Conta o número de transações realizadas por cada representante
 transacoes_por_representante <- dados_vendas %>%
   group_by(Representante) %>%
   summarize(Contagem_Transacoes = n()) %>% 
   arrange(desc(Contagem_Transacoes))
 
 
-# Exibir o resultado
+# Exibe o resultado
 transacoes_por_representante
 ```
 
@@ -249,15 +282,20 @@ E se quisermos obter os representantes que realizaram as transações que
 geraram a maior receita total, em ordem decrescente?
 
 ```{r}
-# Calcular a receita total por representante e ordenar em ordem decrescente
+# Calcula a receita total por representante e ordena em ordem decrescente
 representantes_maior_receita <- dados_vendas %>%
   group_by(Representante) %>%
   summarize(Receita_Total = sum(Receita)) %>%
   arrange(desc(Receita_Total))
 
-# Exibir o resultado
+# Exibe o resultado
 representantes_maior_receita
 ```
+
+### Sua Vez
+
+Conte o número de transações realizadas por cada representante e exiba os 
+três representantes com o maior número de transações.
 
 
 
@@ -267,12 +305,12 @@ representantes_maior_receita
 combinando as funções `group_by` e `summarize`
 
 ```{r}
-# Calcular a média de unidades vendidas por produto e cidade
+# Calcula a média de unidades vendidas por produto e cidade
 media_unidades <- dados_vendas %>%
   group_by(Cidade, Produto) %>%
   summarize(Media_Unidades = mean(Unidades))
 
-# Exibir o resultado
+# Exibe o resultado
 media_unidades
 ```
 
@@ -281,14 +319,20 @@ E se quisermos calcular a receita média por representante e por produto?
 Podemos obter com:
 
 ```{r}
-# Calcular a receita média por representante e por produto
+# Calcula a receita média por representante e por produto
 receita_media_representante_produto <- dados_vendas %>%
   group_by(Representante, Produto) %>%
   summarize(Receita_Media = mean(Receita))
 
-# Exibir o resultado
+# Exibe o resultado
 receita_media_representante_produto
 ```
+
+### Sua Vez
+
+Calcule o número total de unidades vendidas por cada representante e exiba 
+os três representantes que venderam o maior número de unidades.
+
 
 
 
@@ -365,7 +409,7 @@ funções apropriadas do pacote `dplyr`. Além disso, vamos inserir a
 fonte dos dados ao final da tabela:
 
 ```{r}
-# Carregar pacotes necessários
+# Carrega os pacotes necessários
 library(gt)
 
 # Calcula a receita total por cidade e produto e 
@@ -375,7 +419,7 @@ tabela_receita <- dados_vendas %>%
   summarize(Receita_Total = sum(Receita)) %>%
   arrange(desc(Receita_Total))
 
-# Criar uma tabela usando gt
+# Cria uma tabela usando o pacote gt
 tabela_receita %>%
   # Inicia a construção da tabela a partir do objeto 'tabela_receita'
   gt() %>%
@@ -412,7 +456,7 @@ variáveis numéricas, podemos fazer isso com a função `data_color` do
 pacote `gt`:
 
 ```{r}
-# Criar tabela usando o pacote gt 
+# Cria uma tabela usando o pacote gt 
 tabela_receita %>%
   gt() %>%
   # Adiciona um cabeçalho à tabela com título e subtítulo
@@ -469,7 +513,7 @@ passar o mouse sobre uma linha ela é destacada com uma cor. Além disso,
 podemos definir uma borda para a tabela:
 
 ```{r}
-# Criar a tabela interativa com reactable
+# Cria uma tabela interativa com o pacote reactable
 reactable(
   tabela_receita,
   pagination = FALSE,
@@ -487,7 +531,7 @@ pacote `reactablefmtr`:
 ```{r}
 library(reactablefmtr)
 
-# Criar a tabela interativa com reactable
+# Cria uma tabela interativa com o pacote reactable
 reactable(
   tabela_receita,
   pagination = FALSE,
@@ -516,7 +560,8 @@ o pacote `ggplot2` com:
 
 ```{r}
 
-# Cria o gráfico de barras horizontal ordenado
+# Cria um gráfico de barras horizontais ordenadas
+# reorder é usada para ordenar as barras de acordo com a receita total
 ggplot(receita_por_cidade, aes(x = reorder(Cidade, Receita_Total), y = Receita_Total)) +
   geom_col() +
   coord_flip() +
@@ -598,7 +643,7 @@ Agora que criamos os dados necessários, podemos criar um gráfico de colunas
 empilhadas.
 
 ```{r}
-# cria gráfico de barras interativo com highcharter
+# Inicializa o gráfico interativo com highcharter
 highchart() %>%
   
   # Define o tipo de gráfico como "coluna" (barras verticais)
@@ -665,7 +710,7 @@ colunas empilhadas para mostrar a contribuição de cada produto para a
 receita total:
 
 ```{r}
-# receita total da cidade
+# Inicializa o gráfico interativo com highcharter
 highchart() %>%
   # Define o tipo de gráfico como "coluna"
   hc_chart(type = "column") %>%  
@@ -717,7 +762,7 @@ E o gráfico interativo de barras empilhadas pode ser criado com:
 
 
 ```{r}
-# Cria o gráfico interativo com as colunas empilhadas
+# Inicializa o gráfico interativo com com as colunas empilhadas
 highchart() %>%
   # Define o tipo de gráfico como "coluna"
   hc_chart(type = "column") %>%  

@@ -30,12 +30,17 @@ contém o projeto do RStudio. Para abri-lo, basta seguir um dos passos abaixo:
 ## Tópicos Abordados
 
 ### **Dia 1: Curso Relâmpago sobre R + RStudio + Quarto**
-- **Atividade**: Implementação do ciclo completo de Análise de Dados com R, RStudio e Quarto.
+
+- **Atividade**: Implementação de algumas etapas de um 
+                 ciclo de Análise de Dados com R + RStudio + Quarto.
 
 ### **Dia 2: Quarto Dashboards e Aplicativos Web**
+
 - **Quarto Dashboards**: Desenvolvimento de dashboards interativos.
-- **Aplicativos Web com Shiny**: Introdução ao Shiny para criação de aplicativos web dinâmicos.
-- **Dashboards com Shiny e Shinydashboard**: Criação de dashboards customizados utilizando os pacotes `shiny` e `shinydashboard`.
+- **Aplicativos Web com Shiny**: Introdução ao Shiny para criação de 
+                                 aplicativos web interativos.
+- **Dashboards com Shiny e Shinydashboard**: Criação de dashboards customizados 
+utilizando os pacotes `shiny` e `shinydashboard`.
 
 ---
 

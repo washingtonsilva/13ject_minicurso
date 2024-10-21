@@ -36,7 +36,7 @@ contém o projeto do RStudio. Para abri-lo, basta seguir um dos passos abaixo:
 
 ### **Dia 2: Quarto Dashboards e Aplicativos Web**
 
-- **Quarto Dashboards**: Desenvolvimento de dashboards interativos.
+- **Quarto Dashboards**: Desenvolvimento de Quarto Dashboards.
 - **Aplicativos Web com Shiny**: Introdução ao Shiny para criação de 
                                  aplicativos web interativos.
 - **Dashboards com Shiny e Shinydashboard**: Criação de dashboards customizados 

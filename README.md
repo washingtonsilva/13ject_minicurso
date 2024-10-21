@@ -1,6 +1,8 @@
 
 # Workshop: Introdução à Linguagem R e ao Sistema Quarto
 
+![Banner do Minicurso](minicurso.png)
+
 Bem-vindo ao *Workshop de Introdução à Linguagem R e ao Sistema Quarto*, que 
 será realizado durante a **XIII Jornada de Educação, Ciência e Tecnologia** 
 do IFMG - Campus Formiga, nos dias **22/10/2024** e **23/10/2024**.

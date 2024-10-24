@@ -4,55 +4,53 @@ library(ggplot2) # Pacote para criar o gráfico de linha
 library(scales)  # Pacote para formatar os valores dos eixos no gráfico
 
 # Define a interface do usuário (UI) do aplicativo
-ui <- page_sidebar(
+ui <- fluidPage(
   # Título principal da aplicação
-  title = "Calculadora de Prestações",
+  titlePanel("Calculadora de Prestações"),
   
-  # Barra lateral com entradas de dados do usuário
-  sidebar = sidebar(
-    # Campo para o usuário inserir o valor da compra
-    numericInput("valor_compra", "Valor da compra (R$)", value = 10000, min = 0),
-    # Campo para o usuário inserir a taxa de juros mensal
-    numericInput("taxa_juros", "Taxa de juros mensal (%)", value = 2, min = 0, max = 100, step = 0.1),
-    # Campo para o usuário inserir o número de prestações
-    numericInput("num_prestacoes", "Número de prestações", value = 12, min = 1, max = 360),
-    # Campo para o usuário inserir o valor da entrada (opcional)
-    numericInput("valor_entrada", "Valor da entrada (R$)", value = 0, min = 0),
-    # Botão para iniciar o cálculo
-    actionButton("calcular", "Calcular", class = "btn-primary"),
-    # Botão para resetar os valores e começar de novo
-    actionButton("reset", "Resetar", class = "btn-secondary")
-  ),
-  
-  # Layout em colunas para os resultados
-  layout_columns(
-    # Exibe os resultados dos cálculos em textos
-    card(
-      card_header("Resultados"),
+  # Layout com barra lateral e painel principal
+  sidebarLayout(
+    # Barra lateral com entradas de dados do usuário
+    sidebarPanel(
+      # Campo para o usuário inserir o valor da compra
+      numericInput("valor_compra", "Valor da compra (R$)", value = 10000, min = 0),
+      # Campo para o usuário inserir a taxa de juros mensal
+      numericInput("taxa_juros", "Taxa de juros mensal (%)", value = 2, min = 0, max = 100, step = 0.1),
+      # Campo para o usuário inserir o número de prestações
+      numericInput("num_prestacoes", "Número de prestações", value = 12, min = 1, max = 360),
+      # Campo para o usuário inserir o valor da entrada (opcional)
+      numericInput("valor_entrada", "Valor da entrada (R$)", value = 0, min = 0),
+      # Botão para iniciar o cálculo
+      actionButton("calcular", "Calcular", class = "btn-primary"),
+      # Botão para resetar os valores e começar de novo
+      actionButton("reset", "Resetar", class = "btn-secondary")
+    ),
+    
+    # Painel principal com os resultados e o gráfico
+    mainPanel(
+      # Exibe os resultados dos cálculos em textos
+      h3("Resultados"),
       textOutput("valor_prestacao"),
       textOutput("valor_total"),
-      textOutput("total_juros")
-    ),
-    # Gráfico que mostrará a evolução do saldo devedor
-    card(
-      card_header("Evolução do Saldo Devedor"),
-      plotOutput("grafico_evolucao")
+      textOutput("total_juros"),
+      
+      # Gráfico que mostrará a evolução do saldo devedor
+      h3("Evolução do Saldo Devedor"),
+      plotOutput("grafico_evolucao"),
+      
+      # Card de ajuda com instruções para o usuário entender como usar a calculadora
+      h3("Ajuda e Instruções"),
+      p("Esta calculadora permite simular o financiamento de uma compra. Preencha os campos:"),
+      tags$ul(
+        tags$li("Valor da compra: O valor total do bem ou serviço."),
+        tags$li("Taxa de juros mensal: A taxa de juros aplicada mensalmente."),
+        tags$li("Número de prestações: Quantas parcelas mensais para pagar."),
+        tags$li("Valor da entrada (opcional): Um pagamento inicial, se houver.")
+      ),
+      p("Os cálculos são baseados no Sistema de Amortização Francês (Price). A fórmula usada é:"),
+      tags$pre("Prestação = [F * i * (1 + i)^n] / [(1 + i)^n - 1]"),
+      p("Onde F é o valor financiado, i é a taxa de juros mensal, e n é o número de prestações.")
     )
-  ),
-  
-  # Card de ajuda com instruções para o usuário entender como usar a calculadora
-  card(
-    card_header("Ajuda e Instruções"),
-    "Esta calculadora permite simular o financiamento de uma compra. Preencha os campos:",
-    tags$ul(
-      tags$li("Valor da compra: O valor total do bem ou serviço."),
-      tags$li("Taxa de juros mensal: A taxa de juros aplicada mensalmente."),
-      tags$li("Número de prestações: Quantas parcelas mensais para pagar."),
-      tags$li("Valor da entrada (opcional): Um pagamento inicial, se houver.")
-    ),
-    "Os cálculos são baseados no Sistema de Amortização Francês (Price). A fórmula usada é:",
-    tags$pre("Prestação = [F * i * (1 + i)^n] / [(1 + i)^n - 1]"),
-    "Onde F é o valor financiado, i é a taxa de juros mensal, e n é o número de prestações."
   )
 )
 
@@ -149,4 +147,3 @@ server <- function(input, output, session) {
 
 # Executa o aplicativo Shiny
 shinyApp(ui, server)
-
